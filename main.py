@@ -19,7 +19,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 
 URL = "https://api.etherscan.io/api"
-CHECK_DELAY = 2
+CHECK_DELAY = 30
 
 
 def get_log(nft_address, from_block, to_block='latest'):
@@ -109,48 +109,17 @@ def find_transactions(logs):
     return confirmed_transactions
 
 
-# if __name__ == "__main__":
-#     # nft = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"  # Boredape
-#     nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # CloneX
-    
-#     # Initialise the first last_checked
-#     last_checked = get_latest_block()
-#     print("Initialised: ", last_checked)
-
-#     while True:
-#         latest = get_latest_block()
-#         logs = get_log(nft, last_checked, latest)
-        
-#         if logs:
-#             transactions = find_transactions(logs)
-
-#             for trans in transactions:
-#                 token_id, sender, receiver, timestamp = trans
-#                 timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
-#                 alert_message = """
-#                 ----TRANSACTION DETECTED----
-#                 @ UTC {}
-#                 NFT Collection Contract Address: {}
-#                 Token ID: {}
-#                 Sender Address: {}
-#                 Receiver Address: {}\n
-#                 """.format(timestamp, nft, token_id, sender, receiver)
-#                 print(alert_message)
-     
-#         print("Latest Block Checked: {}".format(latest))
-#         last_checked = latest
-#         time.sleep(CHECK_DELAY)
-
-
-
 client = discord.Client()
+
 
 def send_msg(channel: discord.channel, message):
     channel.send(message)
 
+
 @client.event
 async def on_ready():
     print("we have logged in as {0.user}".format(client))
+
 
 @client.event
 async def on_message(message):
@@ -158,7 +127,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     if message.content == '/About':
-        await message.channel.send('Hi, this bot will send live transaction receipt of Blockchain miners club nft that was transacted')
+        await message.channel.send('Hi, this bot will send live transaction receipts of Blockchain miners club nft that was transacted')
     if message.content == '/Start':
         running = True
         last_checked = get_latest_block()
@@ -166,11 +135,7 @@ async def on_message(message):
         await message.channel.send("Bot Started")
         
         while running:
-            print(running)
-            channel = client.get_channel(discord.channel)
-
             latest = get_latest_block()
-            latest = 14191497
             logs = get_log(nft, last_checked, latest)
             
             if logs:
@@ -181,7 +146,7 @@ async def on_message(message):
                     timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
                     alert_message = """
                     ----TRANSACTION DETECTED----
-                    @ UTC {}
+                    @ {} UTC
                     NFT Collection Contract Address: {}
                     Token ID: {}
                     Sender Address: {}
@@ -206,3 +171,4 @@ async def on_message(message):
 if __name__ == "__main__":
     nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"
     client.run(DISCORD_TOKEN)
+    
