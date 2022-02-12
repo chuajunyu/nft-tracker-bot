@@ -7,8 +7,19 @@ import requests
 from env import ETHERSCAN_API_KEY
 
 
+import discord
+import os
+from dotenv import load_dotenv
+from discord.ext import commands
+
+
+load_dotenv()
+
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+
+
 URL = "https://api.etherscan.io/api"
-CHECK_DELAY = 30
+CHECK_DELAY = 2
 
 
 def get_log(nft_address, from_block, to_block='latest'):
@@ -98,34 +109,100 @@ def find_transactions(logs):
     return confirmed_transactions
 
 
-if __name__ == "__main__":
-    nft = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"  # Boredape
-    # nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # CloneX
+# if __name__ == "__main__":
+#     # nft = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"  # Boredape
+#     nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # CloneX
     
-    # Initialise the first last_checked
-    last_checked = get_latest_block()
-    print("Initialised: ", last_checked)
+#     # Initialise the first last_checked
+#     last_checked = get_latest_block()
+#     print("Initialised: ", last_checked)
 
-    while True:
-        latest = get_latest_block()
-        logs = get_log(nft, last_checked, latest)
+#     while True:
+#         latest = get_latest_block()
+#         logs = get_log(nft, last_checked, latest)
         
-        if logs:
-            transactions = find_transactions(logs)
+#         if logs:
+#             transactions = find_transactions(logs)
 
-            for trans in transactions:
-                token_id, sender, receiver, timestamp = trans
-                timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
-                alert_message = """
-                ----TRANSACTION DETECTED----
-                @ UTC {}
-                NFT Collection Contract Address: {}
-                Token ID: {}
-                Sender Address: {}
-                Receiver Address: {}\n
-                """.format(timestamp, nft, token_id, sender, receiver)
-                print(alert_message)
+#             for trans in transactions:
+#                 token_id, sender, receiver, timestamp = trans
+#                 timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
+#                 alert_message = """
+#                 ----TRANSACTION DETECTED----
+#                 @ UTC {}
+#                 NFT Collection Contract Address: {}
+#                 Token ID: {}
+#                 Sender Address: {}
+#                 Receiver Address: {}\n
+#                 """.format(timestamp, nft, token_id, sender, receiver)
+#                 print(alert_message)
      
-        print("Latest Block Checked: {}".format(latest))
-        last_checked = latest
-        time.sleep(CHECK_DELAY)
+#         print("Latest Block Checked: {}".format(latest))
+#         last_checked = latest
+#         time.sleep(CHECK_DELAY)
+
+
+
+client = discord.Client()
+
+def send_msg(channel: discord.channel, message):
+    channel.send(message)
+
+@client.event
+async def on_ready():
+    print("we have logged in as {0.user}".format(client))
+
+@client.event
+async def on_message(message):
+    global running
+    if message.author == client.user:
+        return
+    if message.content == '/About':
+        await message.channel.send('Hi, this bot will send live transaction receipt of Blockchain miners club nft that was transacted')
+    if message.content == '/Start':
+        running = True
+        last_checked = get_latest_block()
+        print("Initialised: ", last_checked)
+        await message.channel.send("Bot Started")
+        
+        while running:
+            print(running)
+            channel = client.get_channel(discord.channel)
+
+            latest = get_latest_block()
+            latest = 14191497
+            logs = get_log(nft, last_checked, latest)
+            
+            if logs:
+                transactions = find_transactions(logs)
+
+                for trans in transactions:
+                    token_id, sender, receiver, timestamp = trans
+                    timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
+                    alert_message = """
+                    ----TRANSACTION DETECTED----
+                    @ UTC {}
+                    NFT Collection Contract Address: {}
+                    Token ID: {}
+                    Sender Address: {}
+                    Receiver Address: {}\n
+                    """.format(timestamp, nft, token_id, sender, receiver)
+                    print(alert_message)
+            else:
+                alert_message = "Nothing bitch"
+
+            await message.channel.send(alert_message)
+            print("Latest Block Checked: {}".format(latest))
+            
+            last_checked = latest
+            time.sleep(CHECK_DELAY)
+        print('Stopped')
+
+    if message.content == '/Stop':
+        running = False
+        await message.channel.send('Bot Stopped')
+
+
+if __name__ == "__main__":
+    nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"
+    client.run(DISCORD_TOKEN)
