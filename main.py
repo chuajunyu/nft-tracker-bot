@@ -99,8 +99,8 @@ def find_transactions(logs):
 
 
 if __name__ == "__main__":
-    # nft = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"  # Boredape
-    nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # CloneX
+    nft = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"  # Boredape
+    # nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # CloneX
     
     # Initialise the first last_checked
     last_checked = get_latest_block()
