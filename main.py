@@ -1,5 +1,5 @@
 import os
-import time
+import asyncio
 from collections import defaultdict
 from datetime import datetime
 
@@ -13,7 +13,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 
 URL = "https://api.etherscan.io/api"  # URL to do api calls to get nft information
-CHECK_DELAY = 30  # Interval between api calls, in seconds
+CHECK_DELAY = 5  # Interval between api calls, in seconds
 
 
 def get_log(nft_address, from_block, to_block='latest'):
@@ -154,11 +154,12 @@ async def on_message(message):
             print("Latest Block Checked: {}".format(latest))
             
             last_checked = latest
-            time.sleep(CHECK_DELAY)
+            await asyncio.sleep(CHECK_DELAY)
         print('Bot Stopped By User')
 
     if message.content == '/Stop':
         running = False
+        print(running)
         await message.channel.send('Bot Stopped')
 
 
