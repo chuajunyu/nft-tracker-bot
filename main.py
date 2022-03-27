@@ -1,31 +1,24 @@
+import os
 import time
 from collections import defaultdict
 from datetime import datetime
 
 import requests
-
-from env import ETHERSCAN_API_KEY
-
-
 import discord
-import os
-from dotenv import load_dotenv
-from discord.ext import commands
-
+from dotenv import load_dotenv  # For loading env variables
 
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 
-
-URL = "https://api.etherscan.io/api"
-CHECK_DELAY = 30
+URL = "https://api.etherscan.io/api"  # URL to do api calls to get nft information
+CHECK_DELAY = 30  # Interval between api calls, in seconds
 
 
 def get_log(nft_address, from_block, to_block='latest'):
-    """
-    Gets transaction logs of an nft address
-    """
+    """Runs a GET request to return transaction logs of an nft address"""
+    
     query = {
         "module": "logs",
         "action": "getLogs",
@@ -46,6 +39,7 @@ def get_log(nft_address, from_block, to_block='latest'):
 
 def get_latest_block():
     """Returns block number of the latest block mined"""
+
     query = {
         "module": "proxy",
         "action": "eth_BlockNumber",
@@ -70,6 +64,7 @@ def find_transactions(logs):
     confirmed_senders = defaultdict(dict)
     possible_receivers = defaultdict(dict)
     """Above dictionaries have the following format:
+    E.G:
     confirmed_senders/possible_receivers = {
         token_id: {timestamp_1: address, timestamp_2:address},
         token_id: {timestamp_1: address}
@@ -112,10 +107,6 @@ def find_transactions(logs):
 client = discord.Client()
 
 
-def send_msg(channel: discord.channel, message):
-    channel.send(message)
-
-
 @client.event
 async def on_ready():
     print("we have logged in as {0.user}".format(client))
@@ -123,11 +114,13 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    global running
+    global running  # Each condition seems to be running in a different frame, hence running variable has to be globalised to work
     if message.author == client.user:
         return
+
     if message.content == '/About':
         await message.channel.send('Hi, this bot will send live transaction receipts of Blockchain miners club nft that was transacted')
+
     if message.content == '/Start':
         running = True
         last_checked = get_latest_block()
@@ -154,7 +147,7 @@ async def on_message(message):
                     """.format(timestamp, nft, token_id, sender, receiver)
                     print(alert_message)
             else:
-                alert_message = "Nothing bitch"
+                pass # No transactions detected
 
             await message.channel.send(alert_message)
             print("Latest Block Checked: {}".format(latest))
