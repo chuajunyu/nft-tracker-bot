@@ -116,14 +116,14 @@ if __name__ == "__main__":
             for trans in transactions:
                 token_id, sender, receiver, timestamp = trans
                 timestamp = datetime.utcfromtimestamp(timestamp).strftime(r'%Y-%m-%d %H:%M:%S')
-                alert_message = """
+                alert_message = f"""
                 ----TRANSACTION DETECTED----
-                @ UTC {}
-                NFT Collection Contract Address: {}
-                Token ID: {}
-                Sender Address: {}
-                Receiver Address: {}\n
-                """.format(timestamp, nft, token_id, sender, receiver)
+                @ UTC {timestamp}
+                NFT Collection Contract Address: {nft}
+                Token ID: {token_id}
+                Sender Address: {sender}
+                Receiver Address: {receiver}\n
+                """
                 print(alert_message)
      
         print("Latest Block Checked: {}".format(latest))
