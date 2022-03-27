@@ -114,16 +114,17 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    global running  # Each condition seems to be running in a different frame, hence running variable has to be globalised to work
+    global running  # Each message sent creates a new environment frame, hence running variable has to be globalised to work
+
     if message.author == client.user:
         return
 
     if message.content == '/About':
-        await message.channel.send('Hi, this bot will send live transaction receipts of Blockchain miners club nft that was transacted')
+        await message.channel.send('Hi, this bot will send live transaction receipts of NFTs that was transacted')
 
     if message.content == '/Start':
         running = True
-        last_checked = get_latest_block()
+        last_checked = get_latest_block()  # This is the block number at which the bot will start to check for transactions
         print("Initialised: ", last_checked)
         await message.channel.send("Bot Started")
         
@@ -132,7 +133,7 @@ async def on_message(message):
             logs = get_log(nft, last_checked, latest)
             
             if logs:
-                transactions = find_transactions(logs)
+                transactions = find_transactions(logs)  # Find valid transactions
 
                 for trans in transactions:
                     token_id, sender, receiver, timestamp = trans
@@ -146,15 +147,15 @@ async def on_message(message):
                     Receiver Address: {}\n
                     """.format(timestamp, nft, token_id, sender, receiver)
                     print(alert_message)
+                    await message.channel.send(alert_message)
             else:
                 pass # No transactions detected
 
-            await message.channel.send(alert_message)
             print("Latest Block Checked: {}".format(latest))
             
             last_checked = latest
             time.sleep(CHECK_DELAY)
-        print('Stopped')
+        print('Bot Stopped By User')
 
     if message.content == '/Stop':
         running = False
@@ -162,6 +163,7 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"
+    nft = "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDA28B"  # Clone-X NFT Collection
+    nft = "0xED5AF388653567Af2F388E6224dC7C4b3241C544" # Azuki NFT Collection
     client.run(DISCORD_TOKEN)
     
