@@ -159,7 +159,6 @@ async def on_message(message):
 
     if message.content == '/Stop':
         running = False
-        print(running)
         await message.channel.send('Bot Stopped')
 
 
